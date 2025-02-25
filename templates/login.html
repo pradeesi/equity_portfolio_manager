@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f9fa;
+            font-family: sans-serif; /* Clean, sans-serif font */
+        }
+        .login-card {
+            width: 100%;
+            max-width: 450px;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px; /* Rounded corners for the card */
+            overflow: hidden; /* Ensure content doesn't overflow rounded corners */
+        }
+        .card-header {
+            background-color: white; /* White header */
+            color: #333; /* Dark text */
+            text-align: center;
+            padding: 1.5rem 1rem; /* Comfortable padding */
+            border-bottom: 1px solid #ddd; /* Subtle border */
+        }
+        .card-header h2 {
+            font-size: 1.75rem; /* Slightly larger heading */
+            margin: 0.5rem 0; /* Space around heading */
+            font-weight: 600;
+        }
+        .card-body {
+            padding: 2rem;
+        }
+        .form-group label {
+            font-weight: 500;
+            color: #555; /* Slightly darker labels */
+        }
+         /* Style for input groups */
+        .input-group-text {
+            background-color: #e9ecef;
+            border: none; /* Remove border to blend with input */
+
+        }
+        .form-control {
+            border: 1px solid #ced4da; /* Consistent border */
+            border-radius: 5px; /* Slightly rounded inputs */
+            padding: 0.75rem 1rem; /* Comfortable input padding */
+
+        }
+      /* Focus style for inputs*/
+      .form-control:focus {
+          border-color: #007bff; /* Highlight on focus */
+          box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+          outline: none; /* Remove default outline */
+      }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            padding: 0.75rem 1rem; /* Consistent padding with inputs */
+            font-weight: 500;
+            border-radius: 5px; /* Rounded button */
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+        .forgot-password {
+            text-align: right;
+            font-size: 0.9rem;
+            color: #007bff;
+            margin-top: 1rem; /* Space above "Forgot Password" */
+            display: block;  /* Make the link a block element */
+        }
+
+        .remember-me {
+          display: flex; /* Use flexbox for alignment */
+          align-items: center; /* Vertically center checkbox and label */
+          margin-top: 1rem; /* Add some space above checkbox */
+        }
+
+        .remember-me label {
+          margin-left: 0.5rem; /* Space between checkbox and label */
+          margin-bottom: 0;  /* Remove default bottom margin from label*/
+        }
+
+       /* User icon styling */
+       .user-icon {
+          font-size: 3rem;       /* Larger icon */
+          color: #007bff;       /* Blue icon color */
+          margin-bottom: 0.5rem; /* Spacing below icon */
+        }
+        .login-options {
+            display:flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="card login-card">
+        <div class="card-header">
+            <i class="fas fa-user-circle user-icon"></i>
+            <h2>Sign In</h2>
+        </div>
+        <div class="card-body">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                <div class="flash-messages">
+                  {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                      {{ message }}
+                      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+            <form method="POST" action="{{ url_for('login') }}">
+
+              <div class="form-group">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                    </div>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                 <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                    </div>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Login</button>
+
+              <div class = "login-options">
+                <div class="remember-me">
+                  <input type="checkbox" id="remember" name="remember">
+                  <label for="remember">Remember Me</label>
+                </div>
+                <a href="#" class="forgot-password">Forgot Password</a>
+              </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

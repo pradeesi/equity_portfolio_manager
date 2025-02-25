@@ -1,0 +1,5 @@
+gcloud services enable run.googleapis.com artifactregistry.googleapis.com
+
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com
+
+gcloud run deploy my-flask-service --source=. --region=us-central1 --allow-unauthenticated

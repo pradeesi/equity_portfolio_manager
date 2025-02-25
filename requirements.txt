@@ -1,0 +1,7 @@
+# requirements.txt
+
+Flask==3.0.0  # or a specific version if needed
+beautifulsoup4==4.12.2  # or a specific version
+requests==2.31.0  # or a specific version
+tenacity==8.2.3 # or a specific version
+gunicorn==20.1.0

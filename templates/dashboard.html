@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { padding-top: 70px; /* Adjust for fixed navbar */ }
+        .table-responsive { overflow-x: auto; }
+        .chart-row {
+            margin-bottom: 30px;
+        }
+        .chart-container {
+            border: 2px solid black;
+            border-radius: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .chart-canvas-container{
+            flex: 1;
+            position: relative;
+        }
+        /* Table Styling */
+        .table-custom {
+            border: 1px solid #dee2e6;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .table-custom th,
+        .table-custom td {
+            border: 1px solid #dee2e6;
+            padding: 0.5rem;
+            text-align: center;
+        }
+        .table-custom th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        /* Alternate Row Colors */
+        .table-custom tbody tr:nth-child(even) {
+            background-color: #f2f2f2; /* Light gray for even rows */
+        }
+        .table-custom tbody tr:nth-child(odd) {
+            background-color: #ffffff; /* White for odd rows */
+        }
+
+        /* Custom Colors for Profit/Loss and Change % */
+        .profit {
+            color: green;
+        }
+        .loss {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" href="#">Portfolio Tracker</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto">  <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('home') }}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('index') }}">Transactions</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav"> <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Portfolio Dashboard</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-messages">
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <div class="row chart-row mt-4">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <div class="chart-canvas-container">
+                       <canvas id="allocationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container" id="profitLossContainer">
+                    <div class="chart-canvas-container">
+                        <canvas id="profitLossChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-custom">
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Quantity</th>
+                        <th>Average Cost</th>
+                        <th>Current Price</th>
+                        <th>Change %</th>
+                        <th>Current Value</th>
+                        <th>Profit/Loss</th>
+                        <th>Profit/Loss %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for symbol, data in portfolio.items() %}
+                    <tr>
+                        <td>{{ symbol }}</td>
+                        <td>{{ data.quantity }}</td>
+                        <td>{{ data.average_cost|round(2) }}</td>
+                        <td class="{{ 'profit' if data.change_percent >= 0 else 'loss' }}">
+                            {{ data.current_price|round(2) if data.current_price is not none else 'N/A' }}
+                        </td>
+                        <td class="{{ 'profit' if data.change_percent >= 0 else 'loss' }}">
+                            {{ data.change_percent|round(2) if data.change_percent is not none else 'N/A' }}%
+                        </td>
+                        <td>{{ data.current_value|round(2) }}</td>
+                        <td class="{{ 'profit' if data.profit_loss >= 0 else 'loss' }}">
+                            {{ data.profit_loss|round(2) }}
+                        </td>
+                        <td class="{{ 'profit' if data.profit_loss_percent >= 0 else 'loss' }}">
+                            {{ data.profit_loss_percent|round(2) }}%
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    const allocationCtx = document.getElementById('allocationChart').getContext('2d');
+    const profitLossCtx = document.getElementById('profitLossChart').getContext('2d');
+
+    const chartData = {{ chart_data|tojson }};
+
+    const allocationChart = new Chart(allocationCtx, {
+        type: 'doughnut',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                data: chartData.allocation,
+                backgroundColor: chartData.background_colors,
+                borderColor: chartData.border_colors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top',
+              },
+              title: {
+                display: true,
+                text: 'Equity Allocation'
+              }
+            },
+           animation: {
+                onComplete: () => {
+                    setChartHeights();
+                }
+            }
+        }
+    });
+
+
+    const profitLossChart = new Chart(profitLossCtx, {
+        type: 'bar',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Profit/Loss',
+                data: chartData.profit_loss,
+                backgroundColor: chartData.background_colors,
+                borderColor: chartData.border_colors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+              legend: {
+                position: 'top',
+              },
+              title: {
+                display: true,
+                text: 'Profit and Loss'
+              }
+            }
+        }
+    });
+
+    function setChartHeights() {
+      const allocationChartHeight = allocationChart.canvas.offsetHeight;
+      profitLossChart.canvas.parentNode.style.height = `${allocationChartHeight}px`;
+    }
+
+    window.addEventListener('resize', setChartHeights);
+});
+</script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
